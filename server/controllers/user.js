@@ -1,6 +1,6 @@
 import User from '../models/user.js'
 import Lead from '../models/lead.js'
-import { createError } from '../utils/error.js'
+import { createError, isValidDate } from '../utils/error.js'
 import { getStringValue, getPhoneValue, validateUserFields } from '../middleware/validation.js'
 import bcrypt from 'bcryptjs'
 
@@ -185,6 +185,52 @@ export const updateRole = async (req, res, next) => {
 
         const updatedUser = await User.findByIdAndUpdate(userId, { role }, { new: true })
         res.status(200).json({ reuslt: updatedUser, message: 'Role updated successfully', success: true })
+
+    } catch (err) {
+        next(createError(500, err.message))
+    }
+}
+
+export const updateUser = async (req, res, next) => {
+    try {
+        const { userId } = req.params
+        const body = req.body || {}
+
+        const updateData = {}
+
+        if (body.firstName != undefined) updateData.firstName = getStringValue(body.firstName)
+        if (body.lastName != undefined) updateData.lastName = getStringValue(body.lastName)
+        if (body.username != undefined) updateData.username = getStringValue(body.username)
+        if (body.phone != undefined) updateData.phone = getPhoneValue(body.phone)
+        if (body.email != undefined) updateData.email = getStringValue(body.email).toLowerCase()
+        if (body.city != undefined) updateData.city = getStringValue(body.city)
+        if (body.CNIC != undefined) updateData.CNIC = getStringValue(body.CNIC)
+        if (body.password != undefined) updateData.password = getStringValue(body.password)
+
+        if (!Object.keys(updateData).length) return next(createError(400, 'No valid fields provided for update'))
+        
+        const validationError = validateUserFields(updateData, [])
+        if (validationError) return next(createError(400, validationError))
+
+        const findedUser = await User.findById(userId)
+        if (!findedUser) return next(createError(401, 'User not exist'))
+
+        if (updateData.username) {
+            const findedUserByUsername = await User.findOne({ username: updateData.username, _id: { $ne: userId } })
+            if (Boolean(findedUserByUsername)) return next(createError(400, 'Username already exist'))
+        }
+
+        if (updateData.email) {
+            const findedUserByEmail = await User.findOne({ email: updateData.email, _id: { $ne: userId } })
+            if (Boolean(findedUserByEmail)) return next(createError(400, 'Email already exist'))
+        }
+
+        if (updateData.password) {
+            updateData.password = await bcrypt.hash(updateData.password, 12)
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true, runValidators: true })
+        res.status(200).json({ result: updatedUser, message: 'User info updated successfully', success: true })
 
     } catch (err) {
         next(createError(500, err.message))

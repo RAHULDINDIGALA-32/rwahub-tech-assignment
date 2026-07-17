@@ -27,7 +27,8 @@ export const validateUserFields = ({ firstName, lastName, username, phone, email
     if (username && !validator.isLength(username, { min: 3, max: 50 })) return 'Username must be between 3 and 50 characters'
     if (phone && !validator.isMobilePhone(phone, "any")) return 'Please provide a valid phone number'
     if (email && !validator.isEmail(email)) return 'Invalid Email Address'
-    if (password && !validator.isLength(password, { min: 6, max: 128 })) return 'Password must be between 6 and 128 characters'
+    if (password && !validator.isLength(password, { min: 8, max: 72 })) return 'Password must be between 8 and 72 characters'
+    if (password && !validator.matches(password, /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/)) return 'Password must contain an uppercase letter, lowercase letter, number, and special character'
     if (city && !validator.isLength(city, { min: 2, max: 100 })) return 'City must be between 2 and 100 characters'
     if (CNIC && !validator.isLength(CNIC, { min: 5, max: 30 })) return 'CNIC must be between 5 and 30 characters'
 
