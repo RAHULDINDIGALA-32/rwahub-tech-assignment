@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import { createError } from '../utils/error.js';
 
 export const verifyToken = async (req, res, next) => {
@@ -55,6 +56,29 @@ export const verifySuperAdmin = (req, res, next) => {
                 next(createError(403, 'Access denied'))
             }
         });
+    } catch (err) {
+        next(createError(500, err.message));
+    }
+};
+
+
+export const verifyIsSameUser = (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const allowedRoles = ['manager', 'super_admin'];
+
+        if (!userId) return next(createError(400, 'User id is required'))
+        if (!req.user?._id) return next(createError(401, 'User is not authenticated'))
+        if (!mongoose.isValidObjectId(userId)) return next(createError(400, 'Invalid user id'))
+
+        const isSameUser = req.user._id.toString() === userId.toString();
+        const isAllowedRole = allowedRoles.includes(req.user.role);
+
+        if (isSameUser || isAllowedRole) {
+            next();
+        } else {
+            next(createError(403, 'You can only access your own account'))
+        }
     } catch (err) {
         next(createError(500, err.message));
     }

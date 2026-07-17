@@ -28,7 +28,7 @@ import inventoryRoutes from './routes/inventory.js'
 
 dotenv.config()
 const app = express()
-const CONNECTION_URL = process.env.ATLAS_URL
+const CONNECTION_URL = process.env.COMPASS_URL
 // const CONNECTION_URL = process.env.COMPASS_URL
 
 const PORT = process.env.PORT || 4000
@@ -71,5 +71,9 @@ app.use((err, req, res, next) => {
 })
 
 mongoose.connect(CONNECTION_URL)
-    .then(() => app.listen(PORT, () => console.log('listening at port ' + PORT)))
+    .then(() => app.listen(PORT, () => {
+        console.log('Connected to MongoDB')
+        console.log('listening at port ' + PORT)
+    }))
     .catch((err) => console.log('error in connection with mongoDB = \n', err))
+
