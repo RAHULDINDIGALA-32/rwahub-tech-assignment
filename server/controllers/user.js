@@ -109,18 +109,19 @@ export const getEmployees = async (req, res, next) => {
 export const createClient = async (req, res, next) => {
     try {
 
-        const { firstName, lastName, username, phone, email, city, CNIC } = req.body || {}
+        const { firstName, lastName, username, password, phone, email, city, CNIC } = req.body || {}
         const clientData = {
             firstName: getStringValue(firstName),
             lastName: getStringValue(lastName),
             username: getStringValue(username),
+            password: getStringValue(password),
             phone: getPhoneValue(phone),
             email: getStringValue(email).toLowerCase(),
             city: getStringValue(city),
             CNIC: getStringValue(CNIC),
         }
 
-        const validationError = validateUserFields(clientData, ['username', 'phone'])
+        const validationError = validateUserFields(clientData, ['username', 'password', 'phone'])
         if (validationError) return next(createError(400, validationError))
 
         const findedUserByUsername = await User.findOne({ username: clientData.username })
@@ -131,7 +132,9 @@ export const createClient = async (req, res, next) => {
             if (Boolean(findedUser)) return next(createError(400, 'Email already exist'))
         }
 
-        const result = await User.create({ ...clientData, role: 'client' })
+        const hashedPassword = await bcrypt.hash(clientData.password, 12)
+
+        const result = await User.create({ ...clientData, password: hashedPassword, role: 'client' })
         res.status(200).json({ result, message: 'client created seccessfully', success: true })
 
     } catch (err) {
