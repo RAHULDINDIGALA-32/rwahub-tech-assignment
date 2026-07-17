@@ -1,6 +1,7 @@
 import User from '../models/user.js'
 import Lead from '../models/lead.js'
 import { createError } from '../utils/error.js'
+import { getStringValue, getPhoneValue, validateUserFields } from '../middleware/validation.js'
 import bcrypt from 'bcryptjs'
 
 
@@ -108,10 +109,29 @@ export const getEmployees = async (req, res, next) => {
 export const createClient = async (req, res, next) => {
     try {
 
-        const findedUser = await User.findOne({ email: req.body.email })
-        if (Boolean(findedUser)) return next(createError(400, 'Email already exist'))
+        const { firstName, lastName, username, phone, email, city, CNIC } = req.body || {}
+        const clientData = {
+            firstName: getStringValue(firstName),
+            lastName: getStringValue(lastName),
+            username: getStringValue(username),
+            phone: getPhoneValue(phone),
+            email: getStringValue(email).toLowerCase(),
+            city: getStringValue(city),
+            CNIC: getStringValue(CNIC),
+        }
 
-        const result = await User.create({ ...req.body, role: 'client' })
+        const validationError = validateUserFields(clientData, ['username', 'phone'])
+        if (validationError) return next(createError(400, validationError))
+
+        const findedUserByUsername = await User.findOne({ username: clientData.username })
+        if (Boolean(findedUserByUsername)) return next(createError(400, 'Username already exist'))
+
+        if (clientData.email) {
+            const findedUser = await User.findOne({ email: clientData.email })
+            if (Boolean(findedUser)) return next(createError(400, 'Email already exist'))
+        }
+
+        const result = await User.create({ ...clientData, role: 'client' })
         res.status(200).json({ result, message: 'client created seccessfully', success: true })
 
     } catch (err) {
@@ -121,13 +141,32 @@ export const createClient = async (req, res, next) => {
 export const createEmployee = async (req, res, next) => {
     try {
 
-        const findedUser = await User.findOne({ username: req.body.username })
+        const { firstName, lastName, username, password, phone, email, city, CNIC } = req.body || {}
+        const employeeData = {
+            firstName: getStringValue(firstName),
+            lastName: getStringValue(lastName),
+            username: getStringValue(username),
+            password: getStringValue(password),
+            phone: getPhoneValue(phone),
+            email: getStringValue(email).toLowerCase(),
+            city: getStringValue(city),
+            CNIC: getStringValue(CNIC),
+        }
+
+        const validationError = validateUserFields(employeeData, ['username', 'password', 'phone'])
+        if (validationError) return next(createError(400, validationError))
+
+        const findedUser = await User.findOne({ username: employeeData.username })
         if (Boolean(findedUser)) return next(createError(400, 'Username already exist'))
 
-        const { password } = req.body
-        const hashedPassword = await bcrypt.hash(password, 12)
+        if (employeeData.email) {
+            const findedUserByEmail = await User.findOne({ email: employeeData.email })
+            if (Boolean(findedUserByEmail)) return next(createError(400, 'Email already exist'))
+        }
 
-        const result = await User.create({ ...req.body, password: hashedPassword, role: 'employee' })
+        const hashedPassword = await bcrypt.hash(employeeData.password, 12)
+
+        const result = await User.create({ ...employeeData, password: hashedPassword, role: 'employee' })
         res.status(200).json({ result, message: 'employee created seccessfully', success: true })
 
     } catch (err) {

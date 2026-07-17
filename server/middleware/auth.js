@@ -62,6 +62,7 @@ export const verifySuperAdmin = (req, res, next) => {
 };
 
 
+// Test Task-1: Integrate the verifyIsSameUser middleware into the getUser API endpoint to ensure proper user verification
 export const verifyIsSameUser = (req, res, next) => {
     try {
         const { userId } = req.params;
