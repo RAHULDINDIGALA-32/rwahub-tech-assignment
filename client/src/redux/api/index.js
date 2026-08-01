@@ -55,7 +55,7 @@ export const getUser = (userId) => API.get(`/user/get/single/${userId}`)
 export const createClient = (clientData) => API.post(`/user/create/client`, clientData)
 export const createEmployee = (employeeData) => API.post(`/user/create/employee`, employeeData)
 export const updateRole = (userId, role) => API.put(`/user/update-role/${userId}`, { role })
-export const updateUser = (userId, userData) => API.put(`/user/update/${userId}`, userData)
+export const updateUser = (userId, userData) => API.patch(`/user/update-info/${userId}`, userData)
 export const deleteUser = (userId) => API.delete(`/user/delete/${userId}`)
 
 

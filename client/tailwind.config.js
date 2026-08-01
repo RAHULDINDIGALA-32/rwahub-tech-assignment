@@ -28,5 +28,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"),require("./public/logo.svg")],
+ // plugins: [require("tailwindcss-animate"),require("./public/logo.svg")],
 };
