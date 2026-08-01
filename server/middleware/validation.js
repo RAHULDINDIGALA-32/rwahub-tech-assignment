@@ -1,3 +1,5 @@
+// Test Task-2: Implement field validation for the createClient and createEmployee API endpoints to ensure incoming data meets required criteria.
+
 import validator from 'validator'
 
 export const getStringValue = (value) => {

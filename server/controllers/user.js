@@ -194,6 +194,7 @@ export const updateRole = async (req, res, next) => {
     }
 }
 
+// Test Task-3: Develop an updateUser API endpoint to allow updating user information with appropriate validation.
 export const updateUser = async (req, res, next) => {
     try {
         const { userId } = req.params
@@ -208,7 +209,10 @@ export const updateUser = async (req, res, next) => {
         if (body.email != undefined) updateData.email = getStringValue(body.email).toLowerCase()
         if (body.city != undefined) updateData.city = getStringValue(body.city)
         if (body.CNIC != undefined) updateData.CNIC = getStringValue(body.CNIC)
-        if (body.password != undefined) updateData.password = getStringValue(body.password)
+
+        // Do not allow password update from this route, it should be updated from a separate route with proper validation and hashing
+        //if (body.password != undefined) updateData.password = getStringValue(body.password)
+        
 
         if (!Object.keys(updateData).length) return next(createError(400, 'No valid fields provided for update'))
         
@@ -228,9 +232,11 @@ export const updateUser = async (req, res, next) => {
             if (Boolean(findedUserByEmail)) return next(createError(400, 'Email already exist'))
         }
 
+        /*
         if (updateData.password) {
             updateData.password = await bcrypt.hash(updateData.password, 12)
         }
+        */
 
         const updatedUser = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true, runValidators: true })
         res.status(200).json({ result: updatedUser, message: 'User info updated successfully', success: true })
